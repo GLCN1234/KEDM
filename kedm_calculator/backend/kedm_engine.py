@@ -123,10 +123,14 @@ def kedm_solve_one(A_input, b_input, target_var, var_names=None):
         "type": "result",
         "variable": var_names[target_var],
         "value": str(result),
-        "float_value": float(result),
+        "float_value": (float(result) if abs(result.numerator) < 10**300 else float(result.numerator) / float(result.denominator)),
     })
 
-    return float(result), steps_log, total_det2
+    try:
+        val = float(result)
+    except (OverflowError, ValueError):
+        val = float(result.numerator) / float(result.denominator)
+    return val, steps_log, total_det2
 
 
 def kedm_solve_system(A, b, var_names=None):
