@@ -1,5 +1,5 @@
 [build]
-  publish = "frontend/templates"
+  publish = "kedm_calculator/frontend/templates"
 
 [[redirects]]
   from = "/*"
