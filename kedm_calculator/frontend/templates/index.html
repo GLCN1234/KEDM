@@ -384,7 +384,8 @@ function updateHeader(det2, ms, vars) {
 }
 
 // ── load examples ──
-fetch('/api/examples').then(r=>r.json()).then(list => {
+const API_BASE = 'https://kedm.onrender.com';
+fetch(`${API_BASE}/api/examples`).then(r=>r.json()).then(list => {
   const g = document.getElementById('ex-grid');
   const bc = {linear_system:'eb-ls', quadratic:'eb-q', arithmetic:'eb-a'};
   list.forEach(ex => {
@@ -427,7 +428,7 @@ async function doSolve() {
   setProgress(20, 'classifying…');
 
   try {
-    const resp = await fetch('/api/solve/stream', {
+    const resp = await fetch(`${API_BASE}/api/solve/stream`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({input, method: activeMethod})
@@ -536,7 +537,7 @@ async function doCompare() {
   setProgress(30, 'running all solvers…');
 
   try {
-    const r = await fetch('/api/compare',{
+    const r = await fetch(`${API_BASE}/api/compare`,{
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({input})
     });
