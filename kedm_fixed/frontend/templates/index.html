@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KEDM Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:    #07090f;
+  --bg2:   #0c1018;
+  --bg3:   #111620;
+  --bg4:   #161d2a;
+  --bdr:   #1c2d44;
+  --bdr2:  #243a55;
+  --cyan:  #00e5ff;
+  --green: #39ff8a;
+  --amber: #ffb830;
+  --pink:  #ff4dab;
+  --purple:#b17aff;
+  --red:   #ff4d6d;
+  --txt:   #b8cce0;
+  --txt2:  #5a7a9a;
+  --txt3:  #2a4a6a;
+  --mono:  'JetBrains Mono', monospace;
+  --head:  'Syne', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--txt);font-family:var(--mono);font-size:13px}
+
+/* grid bg */
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(var(--bg3) 1px,transparent 1px),
+    linear-gradient(90deg,var(--bg3) 1px,transparent 1px);
+  background-size:48px 48px;opacity:.25;pointer-events:none}
+
+/* ── HEADER ── */
+header{
+  position:relative;z-index:10;
+  height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;
+  border-bottom:1px solid var(--bdr);
+  background:rgba(7,9,15,.97);
+  backdrop-filter:blur(8px);
+}
+.logo{display:flex;align-items:center;gap:.75rem}
+.logo-icon{
+  width:34px;height:34px;border-radius:6px;
+  background:linear-gradient(135deg,var(--cyan),#0077aa);
+  display:grid;place-items:center;
+  font-family:var(--head);font-weight:800;font-size:.65rem;
+  color:var(--bg);letter-spacing:.04em;line-height:1.15;text-align:center;
+  box-shadow:0 0 14px rgba(0,229,255,.25);
+}
+.logo-text{font-family:var(--head);font-weight:800;font-size:1.1rem;color:#fff;letter-spacing:-.01em}
+.logo-sub{font-size:.6rem;color:var(--txt2);letter-spacing:.1em;text-transform:uppercase}
+.hstats{display:flex;gap:1.75rem}
+.hstat-val{font-size:.95rem;font-weight:500;color:var(--cyan);font-family:var(--mono)}
+.hstat-lbl{font-size:.55rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.1em}
+
+/* ── LAYOUT ── */
+.layout{
+  position:relative;z-index:5;
+  display:grid;grid-template-columns:420px 1fr;
+  height:calc(100vh - 56px);
+}
+
+/* ── LEFT ── */
+.left{
+  border-right:1px solid var(--bdr);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  background:rgba(7,9,15,.7);
+}
+.pane-hd{
+  padding:.6rem 1.1rem;
+  border-bottom:1px solid var(--bdr);
+  font-size:.6rem;text-transform:uppercase;letter-spacing:.15em;color:var(--txt3);
+  display:flex;align-items:center;gap:.5rem;flex-shrink:0;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 7px var(--cyan)}
+.dot.g{background:var(--green);box-shadow:0 0 7px var(--green)}
+.dot.a{background:var(--amber);box-shadow:0 0 7px var(--amber)}
+.dot.p{background:var(--purple);box-shadow:0 0 7px var(--purple)}
+
+/* Input block */
+.input-block{padding:1rem 1.1rem;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.input-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.12em;color:var(--txt2);margin-bottom:.45rem}
+#eq-input{
+  width:100%;background:var(--bg2);border:1px solid var(--bdr);border-radius:5px;
+  color:var(--cyan);font-family:var(--mono);font-size:.82rem;line-height:1.65;
+  padding:.7rem .9rem;resize:vertical;min-height:110px;max-height:200px;
+  outline:none;transition:border-color .2s,box-shadow .2s;
+}
+#eq-input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,.08)}
+#eq-input::placeholder{color:var(--txt3);font-size:.75rem}
+
+/* Method selector */
+.method-bar{
+  display:flex;align-items:center;gap:.45rem;margin-top:.65rem;flex-wrap:wrap;
+}
+.method-lbl{font-size:.6rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.1em;margin-right:.2rem}
+.mbtn{
+  padding:.28rem .65rem;border-radius:3px;font-family:var(--mono);
+  font-size:.62rem;letter-spacing:.06em;cursor:pointer;
+  transition:all .15s;border:1px solid var(--bdr2);
+  background:transparent;color:var(--txt2);
+}
+.mbtn:hover{border-color:var(--cyan);color:var(--cyan)}
+.mbtn.active{background:var(--cyan);border-color:var(--cyan);color:var(--bg);font-weight:700}
+.mbtn.g.active{background:var(--green);border-color:var(--green)}
+.mbtn.a.active{background:var(--amber);border-color:var(--amber)}
+.mbtn.p.active{background:var(--purple);border-color:var(--purple)}
+.mbtn.r.active{background:var(--pink);border-color:var(--pink)}
+
+/* Solve button */
+.solve-wrap{display:flex;gap:.5rem;margin-top:.65rem}
+#solve-btn{
+  flex:1;padding:.6rem;
+  background:linear-gradient(135deg,var(--cyan),#0088bb);
+  border:none;border-radius:5px;
+  color:var(--bg);font-family:var(--head);font-weight:800;font-size:.85rem;
+  letter-spacing:.04em;cursor:pointer;
+  transition:all .2s;box-shadow:0 0 16px rgba(0,229,255,.2);
+}
+#solve-btn:hover{transform:translateY(-1px);box-shadow:0 0 28px rgba(0,229,255,.35)}
+#solve-btn:active{transform:none}
+#solve-btn.busy{background:var(--bg3);color:var(--txt2);cursor:not-allowed;transform:none;box-shadow:none}
+#compare-btn{
+  padding:.6rem .8rem;
+  background:transparent;border:1px solid var(--purple);
+  border-radius:5px;color:var(--purple);font-family:var(--mono);
+  font-size:.65rem;cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+#compare-btn:hover{background:rgba(177,122,255,.1)}
+
+/* Examples */
+.ex-block{padding:.75rem 1.1rem;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.ex-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.45rem}
+.ex-card{
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:4px;
+  padding:.5rem .65rem;cursor:pointer;transition:all .15s;
+}
+.ex-card:hover{border-color:var(--cyan);background:var(--bg3)}
+.ex-title{font-size:.6rem;color:var(--cyan);margin-bottom:.15rem;line-height:1.3}
+.ex-badge{display:inline-block;padding:.1rem .3rem;border-radius:2px;font-size:.52rem;letter-spacing:.06em}
+.eb-ls{background:rgba(0,229,255,.12);color:var(--cyan)}
+.eb-q{background:rgba(177,122,255,.12);color:var(--purple)}
+.eb-a{background:rgba(57,255,138,.1);color:var(--green)}
+
+/* Results */
+.results{flex:1;overflow-y:auto;padding:1rem 1.1rem}
+.results::-webkit-scrollbar{width:3px}
+.results::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+
+.sol-box{
+  background:var(--bg2);border:1px solid var(--green);border-radius:5px;
+  padding:.9rem 1rem;margin-bottom:.75rem;
+  box-shadow:0 0 16px rgba(57,255,138,.07);
+}
+.sol-box h3{font-family:var(--head);font-size:.6rem;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--green);margin-bottom:.65rem}
+.sol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.4rem}
+.sol-item{background:var(--bg3);border-radius:3px;padding:.45rem .6rem;text-align:center}
+.sol-var{font-size:.58rem;color:var(--txt2);letter-spacing:.08em;text-transform:uppercase}
+.sol-val{font-size:1rem;font-weight:500;color:var(--green);margin-top:.15rem}
+.sol-timing{display:flex;gap:1.2rem;margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--bdr)}
+.sol-t{font-size:.58rem;color:var(--txt3)}
+.sol-t span{color:var(--amber);font-weight:500}
+
+.cmp-box{
+  background:var(--bg2);border:1px solid var(--bdr2);border-radius:5px;
+  padding:.9rem 1rem;margin-bottom:.75rem;
+}
+.cmp-box h3{font-family:var(--head);font-size:.6rem;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--amber);margin-bottom:.65rem}
+.cmp-table{width:100%;border-collapse:collapse;font-size:.65rem}
+.cmp-table th{text-align:left;padding:.3rem .5rem;color:var(--txt2);
+  border-bottom:1px solid var(--bdr);font-weight:500;letter-spacing:.06em}
+.cmp-table td{padding:.3rem .5rem;border-bottom:1px solid var(--bdr)}
+.cmp-table tr:last-child td{border:none}
+.cmp-table .best{color:var(--green);font-weight:700}
+.cmp-table .warn{color:var(--amber)}
+.cmp-table .err{color:var(--red)}
+
+/* ── RIGHT — TERMINAL ── */
+.right{display:flex;flex-direction:column;background:#050810}
+.term-hd{
+  height:40px;padding:0 1.2rem;
+  border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg2);flex-shrink:0;
+}
+.winbtns{display:flex;gap:5px}
+.wb{width:11px;height:11px;border-radius:50%;cursor:pointer}
+.wb.r{background:#ff5f57}.wb.y{background:#ffbd2e}.wb.g{background:#28c840}
+.term-title{font-size:.58rem;text-transform:uppercase;letter-spacing:.15em;color:var(--txt3)}
+.tctrl{display:flex;gap:.4rem}
+.tcbtn{
+  padding:.2rem .55rem;border:1px solid var(--bdr);border-radius:3px;
+  background:transparent;color:var(--txt3);font-family:var(--mono);
+  font-size:.58rem;cursor:pointer;transition:all .15s;
+}
+.tcbtn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+#terminal{
+  flex:1;overflow-y:auto;
+  padding:.9rem 1.2rem;
+  font-family:var(--mono);font-size:.75rem;line-height:1.75;
+}
+#terminal::-webkit-scrollbar{width:3px}
+#terminal::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+.tl{display:flex;align-items:flex-start;gap:.5rem;animation:fi .18s ease}
+@keyframes fi{from{opacity:0;transform:translateX(-3px)}to{opacity:1;transform:none}}
+.tp{color:var(--txt3);flex-shrink:0;min-width:14px;text-align:right}
+.tc{flex:1;word-break:break-word}
+.sys{color:var(--green)}.info{color:var(--cyan)}.step{color:var(--txt)}
+.det{color:var(--purple)}.res{color:var(--green);font-weight:700}
+.err{color:var(--red)}.tim{color:var(--amber)}.sep{color:var(--txt3)}
+.cram{color:var(--amber)}.hd{color:var(--cyan);font-weight:700}
+.arith{color:var(--cyan)}
+.cursor{display:inline-block;width:7px;height:13px;background:var(--cyan);
+  vertical-align:middle;animation:blink 1s step-end infinite;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+.progbar{
+  padding:.5rem 1.2rem .6rem;
+  border-top:1px solid var(--bdr);background:var(--bg2);flex-shrink:0;
+}
+.prog-lbl{display:flex;justify-content:space-between;
+  font-size:.55rem;color:var(--txt3);letter-spacing:.1em;margin-bottom:.3rem}
+.prog-track{height:2px;background:var(--bg3);border-radius:1px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));
+  width:0%;transition:width .25s ease;box-shadow:0 0 6px var(--cyan)}
+
+@media(max-width:860px){
+  .layout{grid-template-columns:1fr;height:auto}
+  .right{height:55vh}
+  .hstats{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">K<br>EDM</div>
+    <div>
+      <div class="logo-text">KEDM Calculator</div>
+      <div class="logo-sub">Kifilideen's Extermination &amp; Determinant Matrix</div>
+    </div>
+  </div>
+  <div class="hstats">
+    <div><div class="hstat-val" id="h-det2">0</div><div class="hstat-lbl">det2 calls</div></div>
+    <div><div class="hstat-val" id="h-time">—</div><div class="hstat-lbl">solve time</div></div>
+    <div><div class="hstat-val" id="h-vars">—</div><div class="hstat-lbl">variables</div></div>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- ══ LEFT ══ -->
+<div class="left">
+  <div class="pane-hd"><span class="dot"></span>Your Equation Input</div>
+
+  <div class="input-block">
+    <div class="input-lbl">Type your equation(s) below — one per line for systems</div>
+    <textarea id="eq-input"
+      placeholder="Linear system (one equation per line):
+  4x + 2y = 20
+  3x - y  = 5
+
+Quadratic:  2x^2 - 4x - 6 = 0
+
+Arithmetic: (25 * 4 + 100) / 2 - 37
+
+Ctrl+Enter to solve"></textarea>
+
+    <div class="method-bar">
+      <span class="method-lbl">Solver:</span>
+      <button class="mbtn active"      data-m="kedm">KEDM</button>
+      <button class="mbtn g"           data-m="gaussian">Gaussian</button>
+      <button class="mbtn a"           data-m="jacobi">Jacobi</button>
+      <button class="mbtn a"           data-m="gauss_seidel">Gauss-Seidel</button>
+      <button class="mbtn p"           data-m="cramer">Cramer's</button>
+      <button class="mbtn r"           data-m="lu">LU Decomp</button>
+    </div>
+
+    <div class="solve-wrap">
+      <button id="solve-btn" onclick="doSolve()">▶ SOLVE</button>
+      <button id="compare-btn" onclick="doCompare()" title="Run ALL solvers and compare">⚖ Compare All</button>
+    </div>
+  </div>
+
+  <div class="ex-block">
+    <div class="pane-hd" style="padding:0 0 .4rem;border:none"><span class="dot a"></span>Example Problems — click to load</div>
+    <div class="ex-grid" id="ex-grid"></div>
+  </div>
+
+  <div class="results" id="results"></div>
+</div>
+
+<!-- ══ RIGHT — TERMINAL ══ -->
+<div class="right">
+  <div class="term-hd">
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <div class="winbtns"><div class="wb r"></div><div class="wb y"></div><div class="wb g"></div></div>
+      <div class="term-title">KEDM Solve Terminal</div>
+    </div>
+    <div class="tctrl">
+      <button class="tcbtn" onclick="clearTerm()">clear</button>
+      <button class="tcbtn" onclick="copyTerm()">copy</button>
+    </div>
+  </div>
+
+  <div id="terminal">
+    <div class="tl"><span class="tp">$</span><span class="tc info">KEDM Calculator — all solvers ready</span></div>
+    <div class="tl"><span class="tp">$</span><span class="tc sep">Osanyinpeju (2025). JSID 7(1). DOI: 10.20372/jsid/2025-340</span></div>
+    <div class="tl"><span class="tp">$</span><span class="tc sep">Type your equation above and press SOLVE (or Ctrl+Enter)</span></div>
+    <div class="tl"><span class="tp"> </span><span class="tc"><span class="cursor"></span></span></div>
+  </div>
+
+  <div class="progbar">
+    <div class="prog-lbl"><span id="prog-lbl">idle</span><span id="prog-pct"></span></div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── state ──
+let activeMethod = 'kedm';
+let busy = false;
+
+// ── method buttons ──
+document.querySelectorAll('.mbtn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.mbtn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    activeMethod = b.dataset.m;
+  });
+});
+
+// ── terminal helpers ──
+function tline(txt, cls='step', prompt='›') {
+  const T = document.getElementById('terminal');
+  T.querySelector('.cursor')?.closest('.tl')?.remove();
+  const d = document.createElement('div');
+  d.className = 'tl';
+  d.innerHTML = `<span class="tp">${prompt}</span><span class="tc ${cls}">${txt}</span>`;
+  T.appendChild(d);
+  const c = document.createElement('div');
+  c.className = 'tl';
+  c.innerHTML = `<span class="tp"> </span><span class="tc"><span class="cursor"></span></span>`;
+  T.appendChild(c);
+  T.scrollTop = T.scrollHeight;
+}
+
+function clearTerm() {
+  document.getElementById('terminal').innerHTML =
+    `<div class="tl"><span class="tp">$</span><span class="tc sep">Cleared.</span></div>
+     <div class="tl"><span class="tp"> </span><span class="tc"><span class="cursor"></span></span></div>`;
+}
+
+function copyTerm() {
+  const txt = [...document.querySelectorAll('#terminal .tc')].map(e=>e.textContent).join('\n');
+  navigator.clipboard.writeText(txt).then(() => tline('Copied to clipboard.','info','✓'));
+}
+
+function setProgress(pct, lbl) {
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-lbl').textContent = lbl;
+  document.getElementById('prog-pct').textContent = pct > 0 ? pct + '%' : '';
+}
+
+function updateHeader(det2, ms, vars) {
+  if (det2 !== undefined) document.getElementById('h-det2').textContent = Number(det2).toLocaleString();
+  if (ms   !== undefined) document.getElementById('h-time').textContent = ms < 1 ? ms.toFixed(3)+'ms' : ms.toFixed(2)+'ms';
+  if (vars !== undefined) document.getElementById('h-vars').textContent = vars;
+}
+
+// ── load examples ──
+fetch('/api/examples').then(r=>r.json()).then(list => {
+  const g = document.getElementById('ex-grid');
+  const bc = {linear_system:'eb-ls', quadratic:'eb-q', arithmetic:'eb-a'};
+  list.forEach(ex => {
+    const c = document.createElement('div');
+    c.className = 'ex-card';
+    c.innerHTML = `<div class="ex-title">${ex.label}</div>
+      <div><span class="ex-badge ${bc[ex.type]||'eb-ls'}">${ex.type}</span></div>`;
+    c.addEventListener('click', () => {
+      document.getElementById('eq-input').value = ex.input;
+      if (ex.type === 'arithmetic') {
+        setMethod('kedm');
+      }
+    });
+    g.appendChild(c);
+  });
+});
+
+function setMethod(m) {
+  document.querySelectorAll('.mbtn').forEach(b => {
+    b.classList.toggle('active', b.dataset.m === m);
+  });
+  activeMethod = m;
+}
+
+// ── MAIN SOLVE ──
+async function doSolve() {
+  if (busy) return;
+  const input = document.getElementById('eq-input').value.trim();
+  if (!input) { tline('No equation entered.','err','✗'); return; }
+
+  busy = true;
+  const btn = document.getElementById('solve-btn');
+  btn.classList.add('busy'); btn.textContent = 'Solving…';
+  document.getElementById('results').innerHTML = '';
+  setProgress(8, 'sending…');
+
+  tline('', 'sep', '');
+  tline('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'hd', '');
+  tline(`Solver: ${activeMethod.toUpperCase()}   Input: ${input.replace(/\n/g,' | ')}`, 'info', '»');
+  setProgress(20, 'classifying…');
+
+  try {
+    const resp = await fetch('/api/solve/stream', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({input, method: activeMethod})
+    });
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    let step = 0;
+
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream:true});
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const d = JSON.parse(line.slice(6));
+          await handleEvent(d);
+          step++;
+          setProgress(Math.min(92, 20 + step*2), 'solving…');
+        } catch(e) {}
+      }
+    }
+    setProgress(100, 'complete');
+    setTimeout(()=>setProgress(0,'idle'), 1800);
+  } catch(e) {
+    tline('Connection error: '+e.message, 'err','✗');
+    setProgress(0,'error');
+  }
+
+  busy = false;
+  btn.classList.remove('busy'); btn.textContent = '▶ SOLVE';
+}
+
+let solBuf = {};
+
+async function handleEvent(d) {
+  switch(d.type) {
+    case 'classify':
+      tline(`Problem: ${d.problem_type}   Method: ${d.method}`, 'info','◆');
+      break;
+    case 'log':
+      const line = d.line;
+      if (!line.trim()) return;
+      let cls = 'step';
+      if (line.startsWith('KEDM') || line.startsWith('Gaussian') || line.startsWith('Jacobi') ||
+          line.startsWith('Gauss') || line.startsWith("Cramer") || line.startsWith('LU'))
+        cls = 'hd';
+      else if (line.includes('det2')) cls = 'det';
+      else if (line.includes(' → ') && line.includes('=')) cls = 'res';
+      else if (line.startsWith('  Iter') || line.startsWith('Converged')) cls = 'sys';
+      else if (line.startsWith('Time:')) cls = 'tim';
+      else if (line.includes('ERROR') || line.includes('WARNING')) cls = 'err';
+      else if (line.startsWith('─')) cls = 'sep';
+      tline(escHtml(line), cls, line.startsWith('  ')?'  ':'›');
+      break;
+    case 'done':
+      updateHeader(d.det2_calls, d.elapsed_ms, Object.keys(d.solutions||{}).length||undefined);
+      tline(`DONE   ${d.elapsed_ms}ms   ${d.det2_calls||0} det2 calls   method=${d.method}`, 'tim','⏱');
+      renderSolutions(d.solutions, d.method, d.elapsed_ms, d.det2_calls, d.note);
+      break;
+    case 'error':
+      tline('ERROR: '+d.message, 'err','✗');
+      break;
+  }
+  await sleep(28);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderSolutions(sols, method, ms, det2, note) {
+  if (!sols || !Object.keys(sols).length) return;
+  const sec = document.getElementById('results');
+  const items = Object.entries(sols).map(([k,v])=>`
+    <div class="sol-item">
+      <div class="sol-var">${k}</div>
+      <div class="sol-val">${typeof v === 'number' ? v.toFixed(4) : v}</div>
+    </div>`).join('');
+  const box = document.createElement('div');
+  box.className = 'sol-box';
+  box.innerHTML = `
+    <h3>Solution — ${method}</h3>
+    <div class="sol-grid">${items}</div>
+    <div class="sol-timing">
+      <div class="sol-t">Time: <span>${ms}ms</span></div>
+      ${det2 ? `<div class="sol-t">det2 calls: <span>${Number(det2).toLocaleString()}</span></div>` : ''}
+      ${note ? `<div class="sol-t">Note: <span>${note}</span></div>` : ''}
+    </div>`;
+  sec.prepend(box);
+}
+
+// ── COMPARE ALL ──
+async function doCompare() {
+  if (busy) return;
+  const input = document.getElementById('eq-input').value.trim();
+  if (!input) { tline('No equation entered.','err','✗'); return; }
+
+  busy = true;
+  document.getElementById('results').innerHTML = '';
+  tline('','sep','');
+  tline('━━ ALL SOLVERS COMPARISON ━━━━━━━━━━━━━━━━━━━━', 'hd','');
+  setProgress(30, 'running all solvers…');
+
+  try {
+    const r = await fetch('/api/compare',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({input})
+    });
+    const data = await r.json();
+    if (data.error) { tline('Error: '+data.error,'err','✗'); }
+    else {
+      renderComparison(data);
+      tline('Comparison complete.','sys','✓');
+    }
+  } catch(e) { tline('Error: '+e.message,'err','✗'); }
+
+  setProgress(0,'idle');
+  busy = false;
+}
+
+function renderComparison(data) {
+  const cmp = data.comparison;
+  const vars = data.variables || [];
+  const sec = document.getElementById('results');
+
+  // Log each method
+  Object.entries(cmp).forEach(([name, r]) => {
+    if (r.error) {
+      tline(`${name}: ERROR — ${r.error}`, 'err', '  ');
+    } else {
+      const sols = Object.entries(r.solutions||{}).map(([k,v])=>`${k}=${typeof v==='number'?v.toFixed(4):v}`).join(', ');
+      tline(`${r.method}: ${sols}  (${r.elapsed_ms}ms)`, 'step', '  ');
+    }
+  });
+
+  // Build comparison table
+  const rows = Object.entries(cmp).map(([name, r]) => {
+    if (r.error) return `<tr><td>${r.method||name}</td><td class="err">ERROR</td><td>—</td><td>—</td></tr>`;
+    const sols = Object.entries(r.solutions||{}).map(([k,v])=>`${k}=${typeof v==='number'?v.toFixed(3):v}`).join(', ');
+    const d2 = r.det2_calls !== '—' ? r.det2_calls : '—';
+    const cls = name==='kedm' ? 'best' : '';
+    return `<tr>
+      <td class="${cls}">${r.method}</td>
+      <td>${sols}</td>
+      <td class="${cls}">${r.elapsed_ms}ms</td>
+      <td>${d2}</td>
+    </tr>`;
+  }).join('');
+
+  const box = document.createElement('div');
+  box.className = 'cmp-box';
+  box.innerHTML = `
+    <h3>⚖ All Solvers Comparison  —  ${data.n}-variable system</h3>
+    <table class="cmp-table">
+      <thead><tr><th>Method</th><th>Solutions</th><th>Time</th><th>det2 calls</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  sec.prepend(box);
+}
+
+// ── Ctrl+Enter ──
+document.getElementById('eq-input').addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter') doSolve();
+});
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
