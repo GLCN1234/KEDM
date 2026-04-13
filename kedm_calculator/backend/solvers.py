@@ -398,14 +398,26 @@ def solve_lu(A_in, b_in, var_names=None):
         var_names = [f"x{i+1}" for i in range(n)]
     t0 = time.perf_counter()
 
-    from scipy.linalg import lu_factor, lu_solve
     A = np.array(A_in, dtype=float)
     b = np.array(b_in, dtype=float)
     log = [f"LU Decomposition  —  {n}-variable system", "─" * 50]
 
     try:
-        lu, piv = lu_factor(A)
-        x = lu_solve((lu, piv), b)
+        # Pure numpy LU with partial pivoting
+        U = A.copy(); L = np.eye(n); P = np.eye(n)
+        for k in range(n):
+            pivot = np.argmax(np.abs(U[k:, k])) + k
+            if pivot != k:
+                U[[k, pivot]] = U[[pivot, k]]
+                P[[k, pivot]] = P[[pivot, k]]
+                if k > 0: L[[k, pivot], :k] = L[[pivot, k], :k]
+            for i in range(k+1, n):
+                L[i,k] = U[i,k]/U[k,k]; U[i] -= L[i,k]*U[k]
+        pb = P @ b
+        y = np.zeros(n)
+        for i in range(n): y[i] = pb[i] - np.dot(L[i,:i], y[:i])
+        x = np.zeros(n)
+        for i in range(n-1,-1,-1): x[i] = (y[i] - np.dot(U[i,i+1:], x[i+1:]))/U[i,i]
         log.append("LU factorisation: A = P·L·U (with partial pivoting)")
         log.append("Forward substitution (Ly = Pb) done")
         log.append("Back substitution  (Ux = y) done")
